@@ -67,6 +67,26 @@ Then you should be able to simply specify your spreadsheetId or ask your agent t
 | `insert_column`       | Insert a new column at specified position                   |
 | `rename_sheet`        | Rename a sheet/tab in a spreadsheet                         |
 | `rename_doc`          | Rename a Google Spreadsheet                                 |
+| `record_shift_entry`  | Record a shift in the Handoff Ledger (Shift_Log)            |
+| `get_baton_status`    | Check who currently has the 'Baton'                         |
+| `call_apps_script`    | Trigger custom logic (like Temporal Handshake) via URL      |
+
+## Multi-LLM Handoff Protocol (Baton Sync)
+
+This server is optimized for the **Adam, Ben, and Cindy Protocol**, allowing multiple LLMs (Gemini, Claude, ChatGPT) to maintain a synchronized state via a `Shift_Log` tab.
+
+### **The Protocol Rules:**
+
+1.  **Check Status**: Before starting any task, run `get_baton_status` to see the latest shift entry and handoff notes.
+2.  **Identify Yourself**: When recording an entry, use your agent name (e.g., "Gemini", "Claude", "ChatGPT").
+3.  **Temporal Handshake**: Use `call_apps_script` with the action `temporal_handshake` to sync timestamps if required by the Apps Script logic.
+4.  **Passing the Baton**: When your shift ends, run `record_shift_entry` with a summary of `actionTaken` and clear `handoffNotes` for the next agent.
+
+### **Apps Script Integration**
+
+- **URL**: `https://script.google.com/macros/s/AKfycbwTx6nUZqmXlH5g_mVCwxPctXe2lR0Y1Hy256TQVOLifAiPu0yJZYvkQywccyxJ38Gs/exec`
+- **Action**: `temporal_handshake`
+- **Spreadsheet ID**: `1LVcmsIKdgd5uf1K79EtGMgd7epD53x6OBO4cgi7GC9Q`
 
 ## License
 

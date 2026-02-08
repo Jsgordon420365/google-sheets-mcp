@@ -413,6 +413,68 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     required: ["spreadsheetId", "newName"],
                 },
             },
+            {
+                name: "record_shift_entry",
+                description: "Record a new entry in the Multi-LLM Handoff Ledger (Shift_Log)",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        spreadsheetId: {
+                            type: "string",
+                            description: "The ID of the spreadsheet",
+                        },
+                        agentName: {
+                            type: "string",
+                            description: "Name of the agent (e.g., Gemini, Claude, ChatGPT)",
+                        },
+                        actionTaken: {
+                            type: "string",
+                            description: "Summary of what was accomplished during this shift",
+                        },
+                        handoffNotes: {
+                            type: "string",
+                            description: "Instructions or context for the next agent",
+                        }
+                    },
+                    required: ["spreadsheetId", "agentName", "actionTaken"],
+                },
+            },
+            {
+                name: "get_baton_status",
+                description: "Get the current status of the baton from the Shift_Log",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        spreadsheetId: {
+                            type: "string",
+                            description: "The ID of the spreadsheet",
+                        }
+                    },
+                    required: ["spreadsheetId"],
+                },
+            },
+            {
+                name: "call_apps_script",
+                description: "Trigger an Apps Script function via its Web App URL",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        url: {
+                            type: "string",
+                            description: "The Apps Script Web App URL",
+                        },
+                        action: {
+                            type: "string",
+                            description: "Action to perform (e.g., 'temporal_handshake')",
+                        },
+                        payload: {
+                            type: "object",
+                            description: "Optional data to send to the script",
+                        }
+                    },
+                    required: ["url", "action"],
+                },
+            },
         ],
     };
 });
@@ -897,6 +959,101 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 };
             }
             
+            case "record_shift_entry": {
+                const { spreadsheetId, agentName, actionTaken, handoffNotes = "" } = args as any;
+                const sheetName = "Shift_Log";
+                
+                // Ensure sheet exists first
+                try {
+                    await getSheetId(spreadsheetId, sheetName);
+                } catch (error) {
+                    // Create it with headers if it doesn't exist
+                    await sheets.spreadsheets.batchUpdate({
+                        spreadsheetId,
+                        requestBody: {
+                            requests: [{ addSheet: { properties: { title: sheetName } } }]
+                        }
+                    });
+                    
+                    // Add headers
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId,
+                        range: `${sheetName}!A1:E1`,
+                        valueInputOption: "USER_ENTERED",
+                        requestBody: {
+                            values: [["Timestamp", "Agent", "Action Taken", "Handoff Notes", "Baton Status"]]
+                        }
+                    });
+                }
+                
+                const timestamp = new Date().toISOString();
+                const values = [timestamp, agentName, actionTaken, handoffNotes, "ACTIVE"];
+                
+                // Append to sheet
+                await sheets.spreadsheets.values.append({
+                    spreadsheetId,
+                    range: `${sheetName}!A:E`,
+                    valueInputOption: "USER_ENTERED",
+                    requestBody: {
+                        values: [values],
+                    },
+                });
+                
+                return {
+                    content: [{ type: "text", text: `Shift entry recorded for ${agentName}. The Baton is now with you/the ledger.` }],
+                    isError: false,
+                };
+            }
+
+            case "get_baton_status": {
+                const { spreadsheetId } = args as any;
+                const sheetName = "Shift_Log";
+                
+                const res = await sheets.spreadsheets.values.get({
+                    spreadsheetId,
+                    range: `${sheetName}!A:E`,
+                });
+                
+                const rows = res.data.values || [];
+                if (rows.length <= 1) {
+                    return {
+                        content: [{ type: "text", text: "Ledger is empty. No active baton found." }],
+                        isError: false,
+                    };
+                }
+                
+                const latestEntry = rows[rows.length - 1];
+                const status = {
+                    timestamp: latestEntry[0],
+                    agent: latestEntry[1],
+                    action: latestEntry[2],
+                    notes: latestEntry[3],
+                    status: latestEntry[4]
+                };
+                
+                return {
+                    content: [{ type: "text", text: JSON.stringify(status, null, 2) }],
+                    isError: false,
+                };
+            }
+
+            case "call_apps_script": {
+                const { url, action, payload = {} } = args as any;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: JSON.stringify({ action, ...payload }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.text();
+                
+                return {
+                    content: [{ type: "text", text: `Apps Script response: ${result}` }],
+                    isError: false,
+                };
+            }
+
             case "rename_doc": {
                 const { spreadsheetId, newName } = args as any;
                 
