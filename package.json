@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "description": "MCP server for interacting with Google Sheets",
   "license": "MIT",
-  "author": "Cardinal Machine Intelligence (https://cardinalaiconsulting.com)",
-  "homepage": "https://cardinalaiconsulting.com",
-  "bugs": "https://github.com/cardinal-machine-intelligence/google-sheets-mcp/issues",
+  "author": "Jsgordon420365",
+  "homepage": "https://github.com/Jsgordon420365/google-sheets-mcp",
+  "bugs": "https://github.com/Jsgordon420365/google-sheets-mcp/issues",
   "type": "module",
   "bin": {
     "google-sheets-mcp": "dist/index.js"

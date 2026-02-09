@@ -11,7 +11,7 @@ https://github.com/user-attachments/assets/cc4729d9-4e6e-437b-848b-6da9a09418c3
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/mkummer225/google-sheets-mcp
+git clone https://github.com/Jsgordon420365/google-sheets-mcp
 cd google-sheets-mcp
 ```
 
