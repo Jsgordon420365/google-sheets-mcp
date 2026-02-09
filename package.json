@@ -8,14 +8,14 @@
   "bugs": "https://github.com/Jsgordon420365/google-sheets-mcp/issues",
   "type": "module",
   "bin": {
-    "google-sheets-mcp": "dist/index.js"
+    "google-sheets-mcp": "index.js"
   },
   "files": [
-    "dist"
+    "index.js",
+    "gcp-oauth.keys.json"
   ],
   "scripts": {
-    "build": "tsc && shx chmod +x dist/*.js",
-    "start": "node dist/index.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
@@ -23,8 +23,6 @@
     "googleapis": "^144.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22",
-    "shx": "^0.3.4",
-    "typescript": "^5.6.2"
+    "@types/node": "^22"
   }
 }

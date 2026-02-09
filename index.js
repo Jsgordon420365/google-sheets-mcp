@@ -1,20 +1,13 @@
 #!/usr/bin/env node
-
 import { authenticate } from "@google-cloud/local-auth";
-import { OAuth2Client } from "google-auth-library"
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-    CallToolRequestSchema,
-    ListToolsRequestSchema,
-    ReadResourceRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, ReadResourceRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
 import fs from "fs";
 import { google } from "googleapis";
 import path from "path";
 import { fileURLToPath } from "url";
-
-const sheets = google.sheets("v4");
+let sheets;
 
 const server = new Server(
     {
@@ -29,29 +22,31 @@ const server = new Server(
     }
 );
 
+// Helper to ensure sheets is initialized with auth
+function getSheets() {
+    if (!sheets) {
+        sheets = google.sheets("v4");
+    }
+    return sheets;
+}
 server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const fileId = request.params.uri.replace("gsheets:///", "");
-
     // Get spreadsheet information
-    const spreadsheet = await sheets.spreadsheets.get({
+    const spreadsheet = await getSheets().spreadsheets.get({
         spreadsheetId: fileId,
     });
-
     // Get first sheet data as CSV
     if (spreadsheet.data.sheets && spreadsheet.data.sheets.length > 0) {
         const firstSheetId = spreadsheet.data.sheets[0].properties?.sheetId;
         const sheetTitle = spreadsheet.data.sheets[0].properties?.title;
-
         const range = `${sheetTitle}`;
-        const res = await sheets.spreadsheets.values.get({
+        const res = await getSheets().spreadsheets.values.get({
             spreadsheetId: fileId,
             range,
         });
-
         // Convert values to CSV
         const values = res.data.values || [];
         const csv = values.map((row) => row.join(",")).join("\n");
-
         return {
             contents: [
                 {
@@ -62,7 +57,6 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
             ],
         };
     }
-
     return {
         contents: [
             {
@@ -73,7 +67,6 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
         ],
     };
 });
-
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
         tools: [
@@ -166,8 +159,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         },
                         sheetName: {
                             type: "string",
-                            description:
-                                "The name of the sheet (optional, defaults to first sheet)",
+                            description: "The name of the sheet (optional, defaults to first sheet)",
                         },
                     },
                     required: ["spreadsheetId"],
@@ -185,8 +177,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         },
                         sheetName: {
                             type: "string",
-                            description:
-                                "The name of the sheet (optional, defaults to first sheet)",
+                            description: "The name of the sheet (optional, defaults to first sheet)",
                         },
                         startRow: {
                             type: "integer",
@@ -212,8 +203,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         },
                         sheetName: {
                             type: "string",
-                            description:
-                                "The name of the sheet (optional, defaults to first sheet)",
+                            description: "The name of the sheet (optional, defaults to first sheet)",
                         },
                         columns: {
                             type: "array",
@@ -238,8 +228,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         },
                         sheetName: {
                             type: "string",
-                            description:
-                                "The name of the sheet (optional, defaults to first sheet)",
+                            description: "The name of the sheet (optional, defaults to first sheet)",
                         },
                         cellAddress: {
                             type: "string",
@@ -265,8 +254,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         },
                         sheetName: {
                             type: "string",
-                            description:
-                                "The name of the sheet (optional, defaults to first sheet)",
+                            description: "The name of the sheet (optional, defaults to first sheet)",
                         },
                         rowIndex: {
                             type: "integer",
@@ -295,8 +283,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         },
                         sheetName: {
                             type: "string",
-                            description:
-                                "The name of the sheet (optional, defaults to first sheet)",
+                            description: "The name of the sheet (optional, defaults to first sheet)",
                         },
                         columnLetter: {
                             type: "string",
@@ -325,8 +312,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         },
                         sheetName: {
                             type: "string",
-                            description:
-                                "The name of the sheet (optional, defaults to first sheet)",
+                            description: "The name of the sheet (optional, defaults to first sheet)",
                         },
                         rowIndex: {
                             type: "integer",
@@ -355,8 +341,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         },
                         sheetName: {
                             type: "string",
-                            description:
-                                "The name of the sheet (optional, defaults to first sheet)",
+                            description: "The name of the sheet (optional, defaults to first sheet)",
                         },
                         columnLetter: {
                             type: "string",
@@ -478,75 +463,55 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         ],
     };
 });
-
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-
     // Helper function to get sheet title
-    async function getSheetTitle(
-        spreadsheetId: string,
-        sheetName?: string
-    ): Promise<string> {
-        if (sheetName) return sheetName;
-
-        const spreadsheet = await sheets.spreadsheets.get({
+    async function getSheetTitle(spreadsheetId, sheetName) {
+        if (sheetName)
+            return sheetName;
+        const spreadsheet = await getSheets().spreadsheets.get({
             spreadsheetId,
         });
-
         if (!spreadsheet.data.sheets || !spreadsheet.data.sheets.length) {
             throw new Error("Spreadsheet has no sheets");
         }
-
         return spreadsheet.data.sheets[0].properties?.title || "";
     }
-
     // Helper function to get sheet ID
-    async function getSheetId(
-        spreadsheetId: string,
-        sheetName?: string
-    ): Promise<number> {
-        const spreadsheet = await sheets.spreadsheets.get({
+    async function getSheetId(spreadsheetId, sheetName) {
+        const spreadsheet = await getSheets().spreadsheets.get({
             spreadsheetId,
         });
-
         if (!spreadsheet.data.sheets || !spreadsheet.data.sheets.length) {
             throw new Error("Spreadsheet has no sheets");
         }
-
         if (sheetName) {
-            const sheet = spreadsheet.data.sheets.find(
-                s => s.properties?.title === sheetName
-            );
+            const sheet = spreadsheet.data.sheets.find(s => s.properties?.title === sheetName);
             if (!sheet) {
                 throw new Error(`Sheet "${sheetName}" not found`);
             }
             return sheet.properties?.sheetId || 0;
         }
-
         return spreadsheet.data.sheets[0].properties?.sheetId || 0;
     }
-
     // Helper function to convert column letter to index (A=0, B=1, etc.)
-    function columnLetterToIndex(column: string): number {
+    function columnLetterToIndex(column) {
         let result = 0;
         for (let i = 0; i < column.length; i++) {
             result = result * 26 + (column.charCodeAt(i) - 'A'.charCodeAt(0) + 1);
         }
         return result - 1; // 0-based index
     }
-
     try {
         switch (name) {
             case "refresh_auth": {
                 try {
                     await authenticateAndSaveCredentials();
-                    
                     // Reload credentials
                     const credentials = JSON.parse(fs.readFileSync(credentialsPath, "utf-8"));
                     const auth = new google.auth.OAuth2();
                     auth.setCredentials(credentials);
                     google.options({ auth });
-                    
                     return {
                         content: [
                             {
@@ -556,7 +521,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         ],
                         isError: false
                     };
-                } catch (error: any) {
+                }
+                catch (error) {
                     return {
                         content: [
                             {
@@ -569,8 +535,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 }
             }
             case "create_spreadsheet": {
-                const { title, initialSheetName = "Sheet1" } = args as any;
-                
+                const { title, initialSheetName = "Sheet1" } = args;
                 const resource = {
                     properties: {
                         title: title,
@@ -583,11 +548,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         }
                     ]
                 };
-                
-                const response = await sheets.spreadsheets.create({
+                const response = await getSheets().spreadsheets.create({
                     requestBody: resource,
                 });
-                
                 return {
                     content: [
                         {
@@ -603,22 +566,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 };
             }
             case "list_sheets": {
-                const { spreadsheetId } = args as any;
-                
-                const spreadsheet = await sheets.spreadsheets.get({
+                const { spreadsheetId } = args;
+                const spreadsheet = await getSheets().spreadsheets.get({
                     spreadsheetId,
                 });
-                
                 if (!spreadsheet.data.sheets || !spreadsheet.data.sheets.length) {
                     throw new Error("Spreadsheet has no sheets");
                 }
-                
                 const sheetsList = spreadsheet.data.sheets.map(sheet => ({
                     title: sheet.properties?.title,
                     sheetId: sheet.properties?.sheetId,
                     index: sheet.properties?.index,
                 }));
-                
                 return {
                     content: [
                         {
@@ -630,9 +589,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 };
             }
             case "create_sheet": {
-                const { spreadsheetId, sheetName } = args as any;
-                
-                await sheets.spreadsheets.batchUpdate({
+                const { spreadsheetId, sheetName } = args;
+                await getSheets().spreadsheets.batchUpdate({
                     spreadsheetId,
                     requestBody: {
                         requests: [
@@ -646,7 +604,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         ]
                     }
                 });
-                
                 return {
                     content: [
                         {
@@ -658,16 +615,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 };
             }
             case "read_all_from_sheet": {
-                const { spreadsheetId, sheetName } = args as any;
+                const { spreadsheetId, sheetName } = args;
                 const title = await getSheetTitle(spreadsheetId, sheetName);
-                
-                const res = await sheets.spreadsheets.values.get({
+                const res = await getSheets().spreadsheets.values.get({
                     spreadsheetId,
                     range: title,
                 });
-                
                 const data = res.data.values || [];
-                
                 return {
                     content: [
                         {
@@ -679,16 +633,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 };
             }
             case "read_headings": {
-                const { spreadsheetId, sheetName } = args as any;
+                const { spreadsheetId, sheetName } = args;
                 const title = await getSheetTitle(spreadsheetId, sheetName);
-
-                const res = await sheets.spreadsheets.values.get({
+                const res = await getSheets().spreadsheets.values.get({
                     spreadsheetId,
                     range: `${title}!1:1`,
                 });
-
                 const headings = res.data.values?.[0] || [];
-
                 return {
                     content: [
                         {
@@ -699,22 +650,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     isError: false,
                 };
             }
-
             case "read_rows": {
-                const { spreadsheetId, sheetName, startRow, endRow } = args as any;
+                const { spreadsheetId, sheetName, startRow, endRow } = args;
                 const title = await getSheetTitle(spreadsheetId, sheetName);
-
                 // Convert to 1-based for Sheets API
                 const adjustedStartRow = startRow + 1;
                 const adjustedEndRow = endRow + 1;
-
-                const res = await sheets.spreadsheets.values.get({
+                const res = await getSheets().spreadsheets.values.get({
                     spreadsheetId,
                     range: `${title}!${adjustedStartRow}:${adjustedEndRow}`,
                 });
-
                 const rows = res.data.values || [];
-
                 return {
                     content: [
                         {
@@ -725,22 +671,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     isError: false,
                 };
             }
-
             case "read_columns": {
-                const { spreadsheetId, sheetName, columns } = args as any;
+                const { spreadsheetId, sheetName, columns } = args;
                 const title = await getSheetTitle(spreadsheetId, sheetName);
-
-                const result: { [key: string]: any[] } = {};
-
+                const result = {};
                 for (const column of columns) {
-                    const res = await sheets.spreadsheets.values.get({
+                    const res = await getSheets().spreadsheets.values.get({
                         spreadsheetId,
                         range: `${title}!${column}:${column}`,
                     });
-
                     result[column] = (res.data.values || []).map((row) => row[0]);
                 }
-
                 return {
                     content: [
                         {
@@ -751,12 +692,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     isError: false,
                 };
             }
-
             case "edit_cell": {
-                const { spreadsheetId, sheetName, cellAddress, value } = args as any;
+                const { spreadsheetId, sheetName, cellAddress, value } = args;
                 const title = await getSheetTitle(spreadsheetId, sheetName);
-
-                await sheets.spreadsheets.values.update({
+                await getSheets().spreadsheets.values.update({
                     spreadsheetId,
                     range: `${title}!${cellAddress}`,
                     valueInputOption: "USER_ENTERED",
@@ -764,7 +703,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         values: [[value]],
                     },
                 });
-
                 return {
                     content: [
                         {
@@ -775,12 +713,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     isError: false,
                 };
             }
-
             case "edit_row": {
-                const { spreadsheetId, sheetName, rowIndex, values } = args as any;
+                const { spreadsheetId, sheetName, rowIndex, values } = args;
                 const title = await getSheetTitle(spreadsheetId, sheetName);
-
-                await sheets.spreadsheets.values.update({
+                await getSheets().spreadsheets.values.update({
                     spreadsheetId,
                     range: `${title}!${rowIndex}:${rowIndex}`,
                     valueInputOption: "USER_ENTERED",
@@ -788,7 +724,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         values: [values],
                     },
                 });
-
                 return {
                     content: [
                         {
@@ -799,15 +734,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     isError: false,
                 };
             }
-
             case "edit_column": {
-                const { spreadsheetId, sheetName, columnLetter, values } = args as any;
+                const { spreadsheetId, sheetName, columnLetter, values } = args;
                 const title = await getSheetTitle(spreadsheetId, sheetName);
-
                 // Convert array of values to array of arrays for the API
-                const formattedValues = values.map((value: any) => [value]);
-
-                await sheets.spreadsheets.values.update({
+                const formattedValues = values.map((value) => [value]);
+                await getSheets().spreadsheets.values.update({
                     spreadsheetId,
                     range: `${title}!${columnLetter}:${columnLetter}`,
                     valueInputOption: "USER_ENTERED",
@@ -815,7 +747,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         values: formattedValues,
                     },
                 });
-
                 return {
                     content: [
                         {
@@ -826,14 +757,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     isError: false,
                 };
             }
-
             case "insert_row": {
-                const { spreadsheetId, sheetName, rowIndex, values = [] } = args as any;
+                const { spreadsheetId, sheetName, rowIndex, values = [] } = args;
                 const sheetId = await getSheetId(spreadsheetId, sheetName);
                 const title = await getSheetTitle(spreadsheetId, sheetName);
-                
                 // First, insert the row
-                await sheets.spreadsheets.batchUpdate({
+                await getSheets().spreadsheets.batchUpdate({
                     spreadsheetId,
                     requestBody: {
                         requests: [
@@ -850,10 +779,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         ]
                     }
                 });
-                
                 // Then, if values were provided, update the row with the values
                 if (values.length > 0) {
-                    await sheets.spreadsheets.values.update({
+                    await getSheets().spreadsheets.values.update({
                         spreadsheetId,
                         range: `${title}!${rowIndex}:${rowIndex}`,
                         valueInputOption: "USER_ENTERED",
@@ -862,7 +790,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         },
                     });
                 }
-
                 return {
                     content: [
                         {
@@ -873,17 +800,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     isError: false,
                 };
             }
-
             case "insert_column": {
-                const { spreadsheetId, sheetName, columnLetter, values = [] } = args as any;
+                const { spreadsheetId, sheetName, columnLetter, values = [] } = args;
                 const sheetId = await getSheetId(spreadsheetId, sheetName);
                 const title = await getSheetTitle(spreadsheetId, sheetName);
-                
                 // Convert column letter to index
                 const columnIndex = columnLetterToIndex(columnLetter);
-                
                 // First, insert the column
-                await sheets.spreadsheets.batchUpdate({
+                await getSheets().spreadsheets.batchUpdate({
                     spreadsheetId,
                     requestBody: {
                         requests: [
@@ -900,13 +824,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         ]
                     }
                 });
-                
                 // Then, if values were provided, update the column with the values
                 if (values.length > 0) {
                     // Format values for API
-                    const formattedValues = values.map((value: any) => [value]);
-                    
-                    await sheets.spreadsheets.values.update({
+                    const formattedValues = values.map((value) => [value]);
+                    await getSheets().spreadsheets.values.update({
                         spreadsheetId,
                         range: `${title}!${columnLetter}:${columnLetter}`,
                         valueInputOption: "USER_ENTERED",
@@ -915,7 +837,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         },
                     });
                 }
-
                 return {
                     content: [
                         {
@@ -926,12 +847,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     isError: false,
                 };
             }
-
             case "rename_sheet": {
-                const { spreadsheetId, sheetName, newName } = args as any;
+                const { spreadsheetId, sheetName, newName } = args;
                 const sheetId = await getSheetId(spreadsheetId, sheetName);
-                
-                await sheets.spreadsheets.batchUpdate({
+                await getSheets().spreadsheets.batchUpdate({
                     spreadsheetId,
                     requestBody: {
                         requests: [
@@ -947,7 +866,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         ]
                     }
                 });
-                
                 return {
                     content: [
                         {
@@ -958,25 +876,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     isError: false,
                 };
             }
-            
             case "record_shift_entry": {
-                const { spreadsheetId, agentName, actionTaken, handoffNotes = "" } = args as any;
+                const { spreadsheetId, agentName, actionTaken, handoffNotes = "" } = args;
                 const sheetName = "Shift_Log";
-                
                 // Ensure sheet exists first
                 try {
                     await getSheetId(spreadsheetId, sheetName);
-                } catch (error) {
+                }
+                catch (error) {
                     // Create it with headers if it doesn't exist
-                    await sheets.spreadsheets.batchUpdate({
+                    await getSheets().spreadsheets.batchUpdate({
                         spreadsheetId,
                         requestBody: {
                             requests: [{ addSheet: { properties: { title: sheetName } } }]
                         }
                     });
-                    
                     // Add headers
-                    await sheets.spreadsheets.values.update({
+                    await getSheets().spreadsheets.values.update({
                         spreadsheetId,
                         range: `${sheetName}!A1:E1`,
                         valueInputOption: "USER_ENTERED",
@@ -985,12 +901,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         }
                     });
                 }
-                
                 const timestamp = new Date().toISOString();
                 const values = [timestamp, agentName, actionTaken, handoffNotes, "ACTIVE"];
-                
                 // Append to sheet
-                await sheets.spreadsheets.values.append({
+                await getSheets().spreadsheets.values.append({
                     spreadsheetId,
                     range: `${sheetName}!A:E`,
                     valueInputOption: "USER_ENTERED",
@@ -998,22 +912,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         values: [values],
                     },
                 });
-                
                 return {
                     content: [{ type: "text", text: `Shift entry recorded for ${agentName}. The Baton is now with you/the ledger.` }],
                     isError: false,
                 };
             }
-
             case "get_baton_status": {
-                const { spreadsheetId } = args as any;
+                const { spreadsheetId } = args;
                 const sheetName = "Shift_Log";
-                
-                const res = await sheets.spreadsheets.values.get({
+                const res = await getSheets().spreadsheets.values.get({
                     spreadsheetId,
                     range: `${sheetName}!A:E`,
                 });
-                
                 const rows = res.data.values || [];
                 if (rows.length <= 1) {
                     return {
@@ -1021,7 +931,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         isError: false,
                     };
                 }
-                
                 const latestEntry = rows[rows.length - 1];
                 const status = {
                     timestamp: latestEntry[0],
@@ -1030,34 +939,27 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     notes: latestEntry[3],
                     status: latestEntry[4]
                 };
-                
                 return {
                     content: [{ type: "text", text: JSON.stringify(status, null, 2) }],
                     isError: false,
                 };
             }
-
             case "call_apps_script": {
-                const { url, action, payload = {} } = args as any;
-                
+                const { url, action, payload = {} } = args;
                 const response = await fetch(url, {
                     method: 'POST',
                     body: JSON.stringify({ action, ...payload }),
                     headers: { 'Content-Type': 'application/json' }
                 });
-                
                 const result = await response.text();
-                
                 return {
                     content: [{ type: "text", text: `Apps Script response: ${result}` }],
                     isError: false,
                 };
             }
-
             case "rename_doc": {
-                const { spreadsheetId, newName } = args as any;
-                
-                await sheets.spreadsheets.batchUpdate({
+                const { spreadsheetId, newName } = args;
+                await getSheets().spreadsheets.batchUpdate({
                     spreadsheetId,
                     requestBody: {
                         requests: [
@@ -1072,7 +974,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         ]
                     }
                 });
-                
                 return {
                     content: [
                         {
@@ -1082,15 +983,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     ],
                     isError: false,
                 };
-            }            
-
+            }
             default:
                 throw new Error(`Tool '${name}' not found`);
         }
-    } catch (error: any) {
+    }
+    catch (error) {
         // Check if the error is related to authentication
-        if (error.message.includes("invalid_grant") || 
-            error.message.includes("token expired") || 
+        if (error.message.includes("invalid_grant") ||
+            error.message.includes("token expired") ||
             error.message.includes("unauthorized")) {
             return {
                 content: [
@@ -1102,7 +1003,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 isError: true,
             };
         }
-        
         return {
             content: [
                 {
@@ -1114,67 +1014,47 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
     }
 });
-
-const credentialsPath =
-    process.env.GSHEETS_CREDENTIALS_PATH ||
-    path.join(
-        path.dirname(fileURLToPath(import.meta.url)),
-        ".gsheets-server-credentials.json"
-    );
-
+const credentialsPath = process.env.GSHEETS_CREDENTIALS_PATH ||
+    path.join(path.dirname(fileURLToPath(import.meta.url)), ".gsheets-server-credentials.json");
 async function authenticateAndSaveCredentials() {
-    const gcpKeysPath = path.join(
-        path.dirname(fileURLToPath(import.meta.url)),
-        "gcp-oauth.keys.json"
-    )
-
+    const gcpKeysPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "gcp-oauth.keys.json");
     if (!fs.existsSync(gcpKeysPath)) {
-        console.error(
-            "GCP keys not found. Please create your credentials in Google Cloud then copy `gcp-oauth.keys.json` into your ./dist directory."
-        );
+        console.error("GCP keys not found. Please create your credentials in Google Cloud then copy `gcp-oauth.keys.json` into your project directory.");
         process.exit(1);
     }
-
     console.log("Launching auth flow...");
-
     const auth = await authenticate({
-        keyfilePath:
-            process.env.GSHEETS_OAUTH_PATH ||
+        keyfilePath: process.env.GSHEETS_OAUTH_PATH ||
             gcpKeysPath,
         scopes: [
             "https://www.googleapis.com/auth/spreadsheets",
         ],
     });
-
     fs.writeFileSync(credentialsPath, JSON.stringify(auth.credentials));
-
     console.log("Credentials saved. You can now run the server.");
     return auth;
 }
-
 async function loadCredentialsAndRunServer() {
-    let auth: OAuth2Client | undefined;
-    
+    let auth;
     if (!fs.existsSync(credentialsPath)) {
         console.log("Credentials not found. Starting authentication flow...");
         auth = await authenticateAndSaveCredentials();
-    } else {
+    }
+    else {
         try {
             const credentials = JSON.parse(fs.readFileSync(credentialsPath, "utf-8"));
             auth = new google.auth.OAuth2();
             auth.setCredentials(credentials);
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Error loading credentials, initiating new authentication flow...");
             auth = await authenticateAndSaveCredentials();
         }
     }
-    
     google.options({ auth });
-
     console.error("Starting server...");
     const transport = new StdioServerTransport();
     await server.connect(transport);
 }
-
 // Handle auth internally
 loadCredentialsAndRunServer().catch(console.error);

@@ -1,0 +1,157 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Shared Ledger API",
+        "description": "API for the Multi-LLM Coordination Ledger (Adam, Ben, and Cindy Protocol). Handle ledger entries, shift logs, and validation.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "REPLACE_WITH_YOUR_DEPLOYED_WEB_APP_URL"
+        }
+    ],
+    "paths": {
+        "/": {
+            "post": {
+                "operationId": "callLedgerAction",
+                "summary": "Execute a ledger action (append, recordShiftEntry, get logs)",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "title": "Append Ledger Entry",
+                                        "type": "object",
+                                        "properties": {
+                                            "action": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "append"
+                                                ]
+                                            },
+                                            "timestamp": {
+                                                "type": "string",
+                                                "description": "ISO string or 14-digit a_now"
+                                            },
+                                            "general_id": {
+                                                "type": "string",
+                                                "example": "@chatgpt"
+                                            },
+                                            "specific_id": {
+                                                "type": "string",
+                                                "description": "Format: [movie]-[number]-[computed]"
+                                            },
+                                            "epsilon": {
+                                                "type": "string",
+                                                "example": "±30"
+                                            },
+                                            "prompt": {
+                                                "type": "string"
+                                            },
+                                            "response": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "action",
+                                            "general_id",
+                                            "specific_id",
+                                            "prompt",
+                                            "response"
+                                        ]
+                                    },
+                                    {
+                                        "title": "Record Shift Entry",
+                                        "type": "object",
+                                        "properties": {
+                                            "action": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "recordShiftEntry"
+                                                ]
+                                            },
+                                            "timestamp": {
+                                                "type": "string"
+                                            },
+                                            "agent": {
+                                                "type": "string",
+                                                "example": "@chatgpt"
+                                            },
+                                            "actionTaken": {
+                                                "type": "string"
+                                            },
+                                            "handoffNotes": {
+                                                "type": "string"
+                                            },
+                                            "batonStatus": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "ACTIVE",
+                                                    "COMPLETE"
+                                                ],
+                                                "default": "ACTIVE"
+                                            }
+                                        },
+                                        "required": [
+                                            "action",
+                                            "agent",
+                                            "actionTaken"
+                                        ]
+                                    },
+                                    {
+                                        "title": "Get Logs",
+                                        "type": "object",
+                                        "properties": {
+                                            "action": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "getShiftLast",
+                                                    "getLastEntries"
+                                                ]
+                                            },
+                                            "n": {
+                                                "type": "integer",
+                                                "default": 10
+                                            }
+                                        },
+                                        "required": [
+                                            "action"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "valid": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
