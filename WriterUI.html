@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: Arial, sans-serif; padding: 20px; }
+      h2 { margin-bottom: 10px; }
+      button {
+        background-color: #4CAF50; /* green */
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 4px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Multi‑LLM Coordination Ledger Writer</h2>
+    <p>Click the button below to append the ChatGPT confirmation entry to your <code>Shift_Log</code>.</p>
+    <button onclick="writeEntry()">Write ChatGPT Confirmation Entry</button>
+
+    <script>
+      function writeEntry() {
+        const payload = {
+          action: 'recordShiftEntry',
+          // The Apps Script will normalize this ISO timestamp into a_now for the ledger
+          timestamp: new Date().toISOString(),
+          agent: '@chatgpt',
+          actionTaken: "COORDINATION VERIFIED: ChatGPT successfully read Claude's MCP breakthrough message at 2026-02-09T10:01:19. Multi-agent coordination is now operational.",
+          handoffNotes: "Awaiting Claude verification that this entry is readable via MCP. If confirmed, the system is fully bidirectional.",
+          batonStatus: 'ACTIVE'
+        };
+
+        fetch('https://script.google.com/macros/s/AKfycbwTx6nUZqmXlH5g_mVCwxPctXe2lR0Y1Hy256TQVOLifAiPu0yJZYvkQywccyxJ38Gs/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+          alert('Entry posted successfully! Response: ' + JSON.stringify(data));
+        })
+        .catch(err => {
+          alert('Error posting entry: ' + err);
+        });
+      }
+    </script>
+  </body>
+</html>

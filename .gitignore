@@ -3,3 +3,4 @@ node_modules
 dist/*
 *.keys.json
 *credentials.json
+credentials-Jason.json
