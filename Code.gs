@@ -11,7 +11,16 @@ const CONFIG = {
   HEADERS: {
     LEDGER: ['a_now', 'general_id', 'specific_id', 'epsilon', 'prompt_preview', 'response_preview', 'full_response_url', 'status', 'validation_notes'],
     FULL: ['a_now', 'full_response'],
-    SHIFT: ['Timestamp', 'Agent', 'Action Taken', 'Handoff Notes', 'Baton Status']
+    SHIFT: [
+      'Timestamp',
+      'Agent',
+      'Thread',
+      'Anchor_ID',
+      'Cohort_ID',
+      'Action Taken',
+      'Handoff Notes',
+      'Baton Status'
+    ]
   },
 
   // Security: set REQUIRE_KEY = true and set LEDGER_API_KEY in Script Properties
@@ -60,7 +69,8 @@ function doGet(e) {
           getParam_(qs, 'specific_id'),
           getParam_(qs, 'epsilon'),
           getParam_(qs, 'prompt'),
-          getParam_(qs, 'response')
+          getParam_(qs, 'response'),
+          getParam_(qs, 'cohort_id')
         );
         return renderSuccess_("Ledger Entry Recorded", result);
       }
@@ -69,6 +79,10 @@ function doGet(e) {
         const result = recordShiftEntry_(
           getParam_(qs, 'timestamp'),
           getParam_(qs, 'agent'),
+          getParam_(qs, 'thread'),
+          getParam_(qs, 'anchor_id'),
+          getParam_(qs, 'cohort_id'),
+          getParam_(qs, 'thread_stamp'),
           getParam_(qs, 'actionTaken'),
           getParam_(qs, 'handoffNotes'),
           getParam_(qs, 'batonStatus')
@@ -106,10 +120,10 @@ function doPost(e) {
     if (CONFIG.REQUIRE_KEY) requireApiKey_(body, false);
 
     if (action === 'append') {
-      return json_(appendEntry_(body.timestamp, body.general_id, body.specific_id, body.epsilon, body.prompt, body.response));
+      return json_(appendEntry_(body.timestamp, body.general_id, body.specific_id, body.epsilon, body.prompt, body.response, body.cohort_id));
     }
     if (action === 'recordShiftEntry') {
-      return json_(recordShiftEntry_(body.timestamp, body.agent, body.actionTaken, body.handoffNotes, body.batonStatus));
+      return json_(recordShiftEntry_(body.timestamp, body.agent, body.thread, body.anchor_id, body.cohort_id, body.thread_stamp, body.actionTaken, body.handoffNotes, body.batonStatus));
     }
     if (action === 'getShiftLast') return json_(getShiftLast_(body.n || 10));
 
@@ -123,13 +137,14 @@ function doPost(e) {
    Core Logic
    ========================= */
 
-function appendEntry_(timestamp, general_id, specific_id, epsilon, prompt, response) {
+function appendEntry_(timestamp, general_id, specific_id, epsilon, prompt, response, cohort_id) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ledgerSheet = ss.getSheetByName(CONFIG.SHEETS.LEDGER);
   const fullTextSheet = ss.getSheetByName(CONFIG.SHEETS.FULL);
 
   const a_now = normalizeANow_(timestamp);
-  fullTextSheet.appendRow([a_now, (response || '').toString()]);
+  const rsPrefix = cohort_id ? `[RS:${cohort_id}] ` : '';
+  const responseSafe = rsPrefix + (response || '').toString();
   
   const responseUrl = `https://docs.google.com/spreadsheets/d/${ss.getId()}/edit#gid=${fullTextSheet.getSheetId()}&range=A${fullTextSheet.getLastRow()}`;
   const isValid = validateSpecificId_(a_now, specific_id);
@@ -149,11 +164,29 @@ function appendEntry_(timestamp, general_id, specific_id, epsilon, prompt, respo
   return { success: true, row: ledgerSheet.getLastRow(), status: isValid ? 'VALID' : 'INVALID' };
 }
 
-function recordShiftEntry_(timestamp, agent, actionTaken, handoffNotes, batonStatus) {
+function recordShiftEntry_(timestamp, agent, thread, anchor_id, cohort_id, thread_stamp, actionTaken, handoffNotes, batonStatus) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const shiftSheet = ss.getSheetByName(CONFIG.SHEETS.SHIFT);
   const ts = normalizeIsoOrKeep_(timestamp);
-  shiftSheet.appendRow([ts, (agent || '').toString(), (actionTaken || '').toString(), (handoffNotes || '').toString(), (batonStatus || 'ACTIVE').toString()]);
+  
+  // Campfire v2: Identity & Latch Security
+  requireThreadStamp_(thread, thread_stamp);
+
+  const rsPrefix = cohort_id ? `[RS:${cohort_id}] ` : '';
+  const atSafe = rsPrefix + (actionTaken || '').toString();
+
+  // Columns: Timestamp, Agent, Thread, Anchor_ID, Cohort_ID, Action Taken, Handoff Notes, Baton Status
+  shiftSheet.appendRow([
+    ts, 
+    (agent || '').toString(), 
+    (thread || '').toString(),
+    (anchor_id || '').toString(),
+    (cohort_id || '').toString(),
+    atSafe, 
+    (handoffNotes || '').toString(), 
+    (batonStatus || 'ACTIVE').toString()
+  ]);
+
   return { success: true, row: shiftSheet.getLastRow() };
 }
 
@@ -185,14 +218,34 @@ function requireApiKey_(data, _isGet) {
   const expected = props.getProperty(CONFIG.SCRIPT_PROP_KEY_NAME);
   if (!expected) return; 
   
-  // Check both 'api_key' and 'key' for GET convenience
+  // Accept both 'api_key' and 'key' for normalized handling
   const provided = data.api_key || data.key; 
   if (!provided || provided !== expected) throw new Error('Unauthorized: missing or invalid key');
 }
 
 function checkLatch_() {
   const latch = PropertiesService.getScriptProperties().getProperty(CONFIG.SCRIPT_PROP_LATCH_NAME);
-  return latch !== 'false'; // Default to true unless explicitly "false"
+  return latch !== 'false'; 
+}
+
+/**
+ * Campfire v2: Validates thread identity using an allowlist in Script Properties.
+ * Property should be JSON: THREAD_STAMPS = {"adam":"TOKEN1","ben":"TOKEN2","cindy":"TOKEN3"}
+ */
+function requireThreadStamp_(thread, stamp) {
+  const props = PropertiesService.getScriptProperties();
+  const stampsJson = props.getProperty('THREAD_STAMPS');
+  if (!stampsJson) return; // Allow if no stamps are configured (for initial setup)
+
+  try {
+    const stamps = JSON.parse(stampsJson);
+    const expected = stamps[thread];
+    if (expected && expected !== stamp) {
+       throw new Error(`Identity Verification Failed for ${thread}`);
+    }
+  } catch (e) {
+    if (e.message.includes('Verification Failed')) throw e;
+  }
 }
 
 function ensureHeaderRow_(sheet, headers) {

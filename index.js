@@ -1022,7 +1022,7 @@ async function authenticateAndSaveCredentials() {
         console.error("GCP keys not found. Please create your credentials in Google Cloud then copy `gcp-oauth.keys.json` into your project directory.");
         process.exit(1);
     }
-    console.log("Launching auth flow...");
+    console.error("Launching auth flow...");
     const auth = await authenticate({
         keyfilePath: process.env.GSHEETS_OAUTH_PATH ||
             gcpKeysPath,
@@ -1031,13 +1031,13 @@ async function authenticateAndSaveCredentials() {
         ],
     });
     fs.writeFileSync(credentialsPath, JSON.stringify(auth.credentials));
-    console.log("Credentials saved. You can now run the server.");
+    console.error("Credentials saved. You can now run the server.");
     return auth;
 }
 async function loadCredentialsAndRunServer() {
     let auth;
     if (!fs.existsSync(credentialsPath)) {
-        console.log("Credentials not found. Starting authentication flow...");
+        console.error("Credentials not found. Starting authentication flow...");
         auth = await authenticateAndSaveCredentials();
     }
     else {
