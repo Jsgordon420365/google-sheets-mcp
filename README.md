@@ -4,7 +4,7 @@ A Model Context Protocol (MCP) connector for Google Sheets that allows AI agents
 
 ## Demo
 
-https://github.com/user-attachments/assets/cc4729d9-4e6e-437b-848b-6da9a09418c3
+<https://github.com/user-attachments/assets/cc4729d9-4e6e-437b-848b-6da9a09418c3>
 
 ## Setup
 
@@ -15,20 +15,20 @@ git clone https://github.com/Jsgordon420365/google-sheets-mcp
 cd google-sheets-mcp
 ```
 
-2. Install dependencies:
+1. Install dependencies:
    `npm install`
 
-3. Build:
+2. Build:
    `npm run build`
 
-4. Create OAuth credentials in Google Cloud Platform:
+3. Create OAuth credentials in Google Cloud Platform:
    - Create a new project in [Google Cloud Console](https://console.cloud.google.com/)
    - Enable the [Google Sheets API](https://console.cloud.google.com/marketplace/product/google/sheets.googleapis.com)
    - Configure the OAuth consent screen
-   - Create OAuth client ID credentials (Desktop application) with an appropriate redirect URI (ex: http://localhost:3000/oauth2callback)
+   - Create OAuth client ID credentials (Desktop application) with an appropriate redirect URI (ex: <http://localhost:3000/oauth2callback>)
    - Download the credentials and save as `gcp-oauth.keys.json` in the `dist` subdirectory
 
-5. Start the MCP server (you'll automatically be prompted to authenticate/re-authenticate your Google account when necessary):
+4. Start the MCP server (you'll automatically be prompted to authenticate/re-authenticate your Google account when necessary):
    `npm run start`
 
 ## Usage
@@ -69,18 +69,19 @@ Then you should be able to simply specify your spreadsheetId or ask your agent t
 | `rename_doc`          | Rename a Google Spreadsheet                                 |
 | `record_shift_entry`  | Record a shift in the Handoff Ledger (Shift_Log)            |
 | `get_baton_status`    | Check who currently has the 'Baton'                         |
+| `append_row`          | Append a row of values to the end of a sheet                |
 | `call_apps_script`    | Trigger custom logic (like Temporal Handshake) via URL      |
 
 ## Multi-LLM Handoff Protocol (Baton Sync)
 
-This server is optimized for the **Adam, Ben, and Cindy Protocol**, allowing multiple LLMs (Gemini, Claude, ChatGPT) to maintain a synchronized state via a `Shift_Log` tab.
+This server is optimized for the **Adam, Ben, and Cindy Protocol**, allowing multiple LLMs (Gemini, Claude, ChatGPT) to maintain a synchronized state via a `Shift_Log` tab. For more details on the underlying philosophy, see [THE_LIVING_LEDGER.md](./THE_LIVING_LEDGER.md).
 
 ### **The Protocol Rules:**
 
-1.  **Check Status**: Before starting any task, run `get_baton_status` to see the latest shift entry and handoff notes.
-2.  **Identify Yourself**: When recording an entry, use your agent name (e.g., "Gemini", "Claude", "ChatGPT").
-3.  **Temporal Handshake**: Use `call_apps_script` with the action `temporal_handshake` to sync timestamps if required by the Apps Script logic.
-4.  **Passing the Baton**: When your shift ends, run `record_shift_entry` with a summary of `actionTaken` and clear `handoffNotes` for the next agent.
+1. **Check Status**: Before starting any task, run `get_baton_status` to see the latest shift entry and handoff notes.
+2. **Identify Yourself**: When recording an entry, use your agent name (e.g., "Gemini", "Claude", "ChatGPT").
+3. **Temporal Handshake**: Use `call_apps_script` with the action `temporal_handshake` to sync timestamps if required by the Apps Script logic.
+4. **Passing the Baton**: When your shift ends, run `record_shift_entry` with a summary of `actionTaken` and clear `handoffNotes` for the next agent.
 
 ### **Apps Script Integration**
 

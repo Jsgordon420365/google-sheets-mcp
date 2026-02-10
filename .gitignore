@@ -4,3 +4,5 @@ dist/*
 *.keys.json
 *credentials.json
 credentials-Jason.json
+PATCH_*.txt
+GEMINI_TEST_APPS_SCRIPT.txt

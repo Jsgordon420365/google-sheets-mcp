@@ -460,6 +460,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     required: ["url", "action"],
                 },
             },
+            {
+                name: "append_row",
+                description: "Append a row of values to the end of a sheet",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        spreadsheetId: {
+                            type: "string",
+                            description: "The ID of the spreadsheet",
+                        },
+                        sheetName: {
+                            type: "string",
+                            description: "Name of the sheet (optional, defaults to first sheet)",
+                        },
+                        values: {
+                            type: "array",
+                            items: { type: "string" },
+                            description: "Array of strings to append as a row",
+                        },
+                    },
+                    required: ["spreadsheetId", "values"],
+                },
+            },
         ],
     };
 });
@@ -954,6 +977,26 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 const result = await response.text();
                 return {
                     content: [{ type: "text", text: `Apps Script response: ${result}` }],
+                    isError: false,
+                };
+            }
+            case "append_row": {
+                const { spreadsheetId, sheetName, values } = args;
+                const title = sheetName
+                    ? await getSheetTitle(spreadsheetId, sheetName)
+                    : (await getSheets().spreadsheets.get({ spreadsheetId })).data.sheets[0].properties.title;
+
+                await getSheets().spreadsheets.values.append({
+                    spreadsheetId,
+                    range: `${title}!A:A`,
+                    valueInputOption: "USER_ENTERED",
+                    requestBody: {
+                        values: [values],
+                    },
+                });
+
+                return {
+                    content: [{ type: "text", text: `Row appended successfully to ${title}` }],
                     isError: false,
                 };
             }
