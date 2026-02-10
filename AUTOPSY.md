@@ -1,4 +1,3 @@
-# Project Autopsy: Why Previous Iterations Failed
 
 To ensure the success of the TAPESTRY architecture, we must document how past failures map to the **Four Friction Points of Agentic Computing**.
 
