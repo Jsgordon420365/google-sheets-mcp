@@ -8,6 +8,7 @@ To ensure the success of the TAPESTRY architecture, we must document how past fa
 
 * **Failures:** Manual reformatting of data to make one tool talk to another.
 * **Reality:** When the conductor spends time on "data munging," intent fusion has failed. The system was executing formats, not goals.
+* **Phantom Participants:** Models claiming to have "got the rules" but operating on outdated or hallucinated instructions because there was no verifiable handshake.
 
 ### 1.2 Persistent Memory Mesh (Context Amnesia)
 
