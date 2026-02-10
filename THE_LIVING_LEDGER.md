@@ -14,12 +14,12 @@ The era of the "monolithic agent" is dead. We have moved beyond the age of the g
 
 ## 2.0 Section II: The Four Friction Points
 
-Orchestration is the art of eliminating friction. We refuse to pay **"Integration Debt."**
+Orchestration is the art of eliminating friction. We refuse to pay **"Integration Debt"**—the compounding cost of manual intervention and fragile middleware.
 
-1. **Context Amnesia (2.3.1):** Systemic failure of memory between sessions. We demand a system that picks up the thread exactly where it was left.
-2. **Environment Isolation (2.3.2):** LLMs imprisoned in browser tabs. We bridge this with terminal automation (zsh, bash wrappers like `run_ts_script.sh`).
-3. **Integration Debt (2.3.3):** Fragile third-party middleware is a liability. We prioritize native tools and lightweight, local scripts.
-4. **The Translation Gap (2.3.4):** Manual waste of human "being" on low-level data munging. Data conversion is a robot's burden.
+1. **Intent Fusion:** The gap between what a human means and what a system actually executes. Friction appears when goals drift or get reinterpreted at every handoff instead of being fused into a stable, machine-legible intent.
+2. **Persistent Memory Mesh:** The loss of continuity across tools, threads, sessions, and agents. Friction shows up as re-explaining and rebuilding context because memory is siloed or ephemeral.
+3. **Environment Integration Layer:** The impedance mismatch between thinking and doing. Friction arises when ideas cannot directly touch files, apps, APIs, or workflows, forcing the human to act as middleware.
+4. **Autonomous Execution and Validation:** The failure to reliably carry work through to completion. Friction exists when systems can draft but cannot execute, verify, and correct outcomes end-to-end.
 
 ## 3.0 Section III: The "Living Ledger" Solution
 

@@ -14,14 +14,14 @@
 
 ## Active Constraints (The Non-Negotiables)
 
-1. **Append-Only Intent**: I will not silently mutate or "clean up" the canonical project history.
-2. **Evidence Preservation**: Every timestamp and observer-claim is treated as immutable signal.
-3. **Low-Friction focus**: Prioritizing zero-loss transfer of Intent, Progress, and Constraints.
-4. **Environment Agnostic**: Ensuring all logic survives across disparate LLM runtimes.
+1. **Append-Only Intent**: No silent mutation of canonical history.
+2. **Evidence Preservation**: Timestamps and observer-claims are immutable signal.
+3. **Low-Friction focus**: Minimum state required for zero-loss transfer.
+4. **Environment Agnostic**: Self-describing protocol across all runtimes.
 
-## Friction Check
+## Friction Check (Agentic Computing)
 
-- [x] Context Amnesia: Blocked by persistent `AUTOPSY.md` and `state.md`.
-- [x] Environment Isolation: Bridged by MCP & Local Shell.
-- [x] Integration Debt: Avoided by favoring native lightweight scripts over middleware.
-- [x] Translation Gap: Robot's burden; actively automating.
+- [x] **Intent Fusion**: Goals are fused into machine-legible intents.
+- [x] **Persistent Memory Mesh**: Continuity maintained across tools and sessions.
+- [x] **Environment Integration Layer**: Bridging thinking and doing via OS/File access.
+- [x] **Autonomous Execution and Validation**: End-to-end task completion with verification.
