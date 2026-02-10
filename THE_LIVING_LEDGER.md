@@ -1,4 +1,3 @@
-# The TAPESTRY Manifest: Orchestration, Friction, and the Infinite Ledger
 
 ## 1.0 Section I: The Vision of U-STACK/TAPESTRY
 
