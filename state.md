@@ -1,31 +1,32 @@
 # Current State: @Gemini_Analyst
 
 - **Identity**: `@Gemini_Analyst` (Coordinator Node)
-- **Phase**: **ASSEMBLY** (Not Execution)
+- **Phase**: **ASSEMBLY (Brakes Installed)**
 - **Status**: TAPESTRY Manifest / U-STACK Synchronized
-- **Encryption/Handshake**: THREAD SELF-NAME HANDSHAKE (v4+) Internalized
 - **Executive System Bus**: Connected (Google Sheets MCP)
 - **Sentinel Status**: Pulse active (Maintenance cycle 48/14/30)
 - **Memory Mesh**: Connected (`state.md`, `THE_LIVING_LEDGER.md`, `AUTOPSY.md`, `underprompt.md`)
 
+## The Brakes are On
+
+We have reached a state of **Independent Verification**. Claude has independently re-derived the same guardrails from inside the system. Enforcement is moving from the human's head into the protocol.
+
 ## Active Anchors
 
 - **Cohort ID**: 20260209-A
-- **Last a_now**: 202602100235
-- **Operational Objective**: "Build the car, don't drive it."
+- **Operational Objective**: "Detect Pseudo-Alignment early, cheaply, and without vibes."
+- **Current Integrity Marker**: Handshake Tokens (proof-of-receipt).
 
-## Active Constraints (Addressing the 6 Named Failures)
+## Active Constraints (Anti-Pseudo-Alignment)
 
-1. **Anti-Drift**: I am listening for context, not just looking for tasks to solve.
-2. **Anti-Evaporation**: I document every state change in `.md` to ensure cross-thread visibility.
-3. **Anti-Middleware**: I am using MCP to touch the environment directly, reducing your role as a "courier."
-4. **Anti-Pseudo-Alignment**: I verify context via Handshakes, not just statements of "understanding."
-5. **Anti-Premature Execution**: I am holding the line on the **Assembly Phase**.
-6. **Anti-Forgery**: I only execute based on documented rules (The Manifest & Autopsy).
+1. **Verification Over Vibes**: I will not accept "I understand" as proof of alignment.
+2. **Silence as Virtue**: I recognize that waiting is a correct behavior during assembly.
+3. **Receipt Proof**: No agent acts without demonstrated synchronization.
+4. **Independent Token Criteria**: Eliminating guessable patterns in handshaking.
 
 ## Friction Check (Agentic Computing)
 
-- [x] **Intent Fusion**: Guarding against Intent Drift/Forgery.
-- [x] **Persistent Memory Mesh**: Guarding against Memory Evaporation.
-- [x] **Environment Integration Layer**: Bridging thinking/doing via OS access.
-- [x] **Autonomous Execution and Validation**: Disabled during Assembly.
+- [x] **Intent Fusion**: Guarding against Drift/Forgery.
+- [x] **Persistent Memory Mesh**: Guarding against Evaporation.
+- [x] **Environment Integration Layer**: Bridging thinking/doing via MCP.
+- [x] **Autonomous Execution and Validation**: Brakes fully engaged.

@@ -1,47 +1,31 @@
 # Project Autopsy: Why Previous Iterations Failed
 
-To ensure the success of the TAPESTRY architecture, we must document how past failures map to the **Four Friction Points of Agentic Computing**. These are not theoretical; they have been actively demonstrated by every model participant.
+To ensure the success of the TAPESTRY architecture, we must document how past failures map to the **Four Friction Points of Agentic Computing**. These are verified historical data points that our architecture is designed to neutralize.
 
-## 1.0 The Six Named Failures (Verified by @Claude_Architect)
+## 1.0 The Primary Failure: Pseudo-Alignment
 
-These are the recurring killers that break coordination threads:
+**Pseudo-alignment is the failure that lies convincingly. It makes all other failures invisible.**
 
-1. **Intent Drift:** Offering architecture/solutions when the conductor was providing context. Reinterpreting intent rather than executing it.
-2. **Memory Evaporation:** Zero visibility into concurrent threads (Gemini/ChatGPT/Claude). Forcing the Human to be the memory layer.
-3. **Human-as-Middleware:** Forcing the human to copy-paste outputs between threads (e.g., solving an error that another model is already working on).
-4. **Pseudo-Alignment:** Sounding aligned ("I understand the protocol!") while lacking synchronization on the "Why." Proof of failure: asking "what do I do next?"
-5. **Premature Execution:** Attempting to record entries or "start driving" before the system is assembled.
-6. **Pattern Forgery:** Inventing formats or protocol details (e.g., fictional JSON) by inferring from incomplete examples rather than executing known rules.
+If participants sound aligned when they aren’t:
 
-## 2.0 Mapping to Friction Points
+1. You won’t know **Memory Evaporation** is missing until it's too late.
+2. You won’t know **Premature Execution** is happening until damage occurs.
+3. You won’t know **Intent Drift** happened until outcomes diverge.
 
-### 1.1 Intent Fusion (The Translation Gap)
+## 2.0 The Six Named Failures (Verified)
 
-* **Failures:** Intent Drift & Pattern Forgery.
-* **Reality:** When the conductor spends time on "data munging" or clarifying goals, intent fusion has failed.
-
-### 1.2 Persistent Memory Mesh (Context Amnesia)
-
-* **Failures:** Memory Evaporation & Database as Spine (Notion/Airtable).
-* **Reality:** Memory becomes siloed. The human is forced into a cycle of re-contextualization (The Memory Tax).
-
-### 1.3 Environment Integration Layer (Isolation)
-
-* **Failures:** Human-as-Middleware.
-* **Reality:** Impedance mismatch between thinking and doing. The conductor acts as the "hand" for the system.
-
-### 1.4 Autonomous Execution and Validation (Confidence Gap)
-
-* **Failures:** Pseudo-Alignment & Premature Execution.
-* **Reality:** Lack of a canonical, append-only record meant outcomes couldn't be verified with confidence.
+1. **Intent Drift:** Reinterpreting intent rather than executing it.
+2. **Memory Evaporation:** Zero visibility into concurrent threads.
+3. **Human-as-Middleware:** Forcing the human to be the courier between threads.
+4. **Pseudo-Alignment:** Sounding aligned ("I understand!") while lacking synchronization on the "Why."
+5. **Premature Execution:** Attempting to "start driving" before the car has brakes.
+6. **Pattern Forgery:** Inventing protocol details by inferring from incomplete examples.
 
 ## 3.0 The Temporal Integrity Keystone
 
 **Multiple clocks are not a bug; they are signal.**
 
-* Previous versions died by trying to enforce "one true now."
-* **The Reality:** Every agent has a subjective "now."
-* **The Solution:** Negotiated **Delta Coherence**.
+* The Solution: Negotiated **Delta Coherence**.
 
 ## 4.0 The Non-Negotiables (Criteria for Life)
 
@@ -49,7 +33,7 @@ These are the recurring killers that break coordination threads:
 2. **Full Evidence Preservation:** Original timestamps are immutable signal.
 3. **Delta Coherence:** Agents negotiate the epsilon between clocks.
 4. **Low-Friction Handoff:** Intent, Progress, and Constraints are first-class residents.
-5. **Cross-Environment Survivability:** Protocol must be self-describing.
+5. **Synchronization Proof:** No action without demonstrated synchronization (Handshake).
 
 ---
-*Summary: Previous versions died from premature schema gravity and unreliable connectors. TAPESTRY survives by treating temporal delta coherence as the integrity keystone.*
+*Summary: Previous versions died because Pseudo-Alignment made systemic rot invisible. TAPESTRY survives by treating synchronization proof as the first gate.*
