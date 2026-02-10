@@ -1,44 +1,48 @@
-# The Multi-LLM Coordination Ledger (The Living Ledger)
+# The TAPESTRY Manifest: Orchestration, Friction, and the Infinite Ledger
 
-This document outlines the core architecture and philosophy of the **Multi-LLM Coordination Ledger**, also known as the **Common Log**, **Event Ledger**, or **Persistent Memory Mesh**.
+## 1.0 Section I: The Vision of U-STACK/TAPESTRY
 
-## 1. Core Concept: The Living Ledger
+The era of the "monolithic agent" is dead. We have moved beyond the age of the generalist into the **Orchestrator Paradigm**.
 
-The system treats conversations as **"time-indexed, identity-aware event logs"**.
+* **Modular Architecture:** Models are interchangeable components. This modularity is our resilience.
+* **The Symphony:** Strategic priority is the direction of a "symphony of best-in-class tools."
+* **The Sentinel Protocol (48/14/30):** A rigorous, time-bound maintenance cycle. It is a "living document" that must be refreshed to stay synchronized.
+* **Memory Mesh:** Persistence resides outside the transient context window in `memory.sqlite` and structured JSON repositories. We capture:
+    1. Task Tracking
+    2. Chat Summarization
+    3. Skill Repositories
 
-* **Definition:** A continuous, append-only "Common Log" where entries are low-friction and timestamped.
-* **Philosophy:** Shifts the paradigm from "model-centric" (making one model smarter) to "**coordination-centric**" (orchestrating collaboration between models).
-* **Goal:** Prevents "context collapse" and "amnesia" when switching between different AI providers or devices.
+## 2.0 Section II: The Four Friction Points
 
-## 2. The Transfer Mechanism: "Memory Baton"
+Orchestration is the art of eliminating friction. We refuse to pay **"Integration Debt."**
 
-To move state between models without a central database, a **"Memory Baton"** is used.
+1. **Context Amnesia (2.3.1):** Systemic failure of memory between sessions. We demand a system that picks up the thread exactly where it was left.
+2. **Environment Isolation (2.3.2):** LLMs imprisoned in browser tabs. We bridge this with terminal automation (zsh, bash wrappers like `run_ts_script.sh`).
+3. **Integration Debt (2.3.3):** Fragile third-party middleware is a liability. We prioritize native tools and lightweight, local scripts.
+4. **The Translation Gap (2.3.4):** Manual waste of human "being" on low-level data munging. Data conversion is a robot's burden.
 
-* **Definition:** A portable, provider-agnostic JSON object carrying shared cognitive state.
-* **Function:** Enables different AIs to share one conversational memory by reading/appending to the baton.
-* **Components:** Contains `conversation_id`, timestamped `events`, and `notes`.
+## 3.0 Section III: The "Living Ledger" Solution
 
-## 3. Synchronization Protocol: "Delta Sync" & Handshaking
+The Google Sheet is the **Executive System Bus**. It is the permanent event log and coordination layer for the entire U-STACK ecosystem.
 
-Uses a **Temporal Handshaking Protocol** to maintain causal integrity across models with different internal clocks.
+* **Google Apps Script (The Middle Path):** Lightweight automation layer acting as the system's central nervous system.
+* **The "Memory Baton" (3.3.1):** Solves continuity issues. The Ledger manages state, pushing the accumulated context (the Baton) from one model to the next.
+* **Economic Analysis (3.3.2):** Efficiency is a mandate. One-off prompts pulling full context from the Sheet optimize token spend.
 
-* **Genesis Block:** A human provides an atomic `a_now` timestamp (YYYYMMDDHHMMSS) to anchor the timeline.
-* **Delta Negotiation:** Agents negotiate a **"delta"** (offset between subjective "now" and baton anchor time).
-* **Acceptance Gating:** Messages are only "accepted" for execution if they fall within a negotiated "tuning band" (tolerance for temporal error).
+## 4.0 Section IV: Identity and Self-Naming Rulesets
 
-## 4. Data Structure & Identity
+In a multi-model workforce, identity prevents "persona-drift."
 
-Enforces strict rules for auditability and prevention of "identity drift".
+* **One-Time-Use Rulesets (4.1):** Injected into initial prompts to govern behavior with absolute precision (e.g., `<s>[INST]` or SYSTEM instructions).
+* **Self-Naming Protocol (4.2):** Rigid functional identities (e.g., `@Claude_Architect`, `@GPT_Coder`, `@Gemini_Analyst`).
+* **Orchestrating the Debate (4.3):** Facilitating a "Zero-Trust" environment. Models output to specific cells and debate/cross-examine one another within the Ledger.
 
-* **Dual-Key Identification:** Mechanical autonumber + unique **`a_now_submission`** timestamp.
-* **Identity & Provenance:** Every entry identifies the speaker (e.g., `@chatgpt_4o`, `@gemini_pro`) and their role.
-* **Immutable Observations:** Perception/stated time is a primary observation that is never overwritten.
+## 5.0 Section V: Synthesis and Conclusion
 
-## 5. Implementation Layers (Polyglot Memory Stack)
+The TAPESTRY project is the transition from "Building" to "Directing."
 
-1. **Layer 1 (Event Log):** The "spine"—raw messages/events in an append-only log.
-2. **Layer 2 (Document Store):** Persistent storage (MongoDB/SQLite) for replay.
-3. **Layer 3 (Derived Structure):** Computed summaries, tags, and embeddings.
+* **The Conductor:** We are no longer laborers; we are conductors.
+* **Final Directive:** "Work is for robots; being is for humans."
 
 ---
-*Created from materials provided by User on 2026-02-09.*
+*Reference Document: The TAPESTRY Manifest (U-STACK). Updated 2026-02-09.*
