@@ -1,8 +1,10 @@
 .DS_Store
-node_modules
-dist/*
+node_modules/
+dist/
 *.keys.json
 *credentials.json
-credentials-Jason.json
+credentials-*.json
 PATCH_*.txt
 GEMINI_TEST_APPS_SCRIPT.txt
+.env
+*.log

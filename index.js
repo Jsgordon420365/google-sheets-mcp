@@ -532,7 +532,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     await authenticateAndSaveCredentials();
                     // Reload credentials
                     const credentials = JSON.parse(fs.readFileSync(credentialsPath, "utf-8"));
-                    const auth = new google.auth.OAuth2();
+                    const gcpKeysPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "gcp-oauth.keys.json");
+                    const keys = JSON.parse(fs.readFileSync(gcpKeysPath, "utf-8")).installed;
+                    const auth = new google.auth.OAuth2(keys.client_id, keys.client_secret);
                     auth.setCredentials(credentials);
                     google.options({ auth });
                     return {
@@ -1079,6 +1081,8 @@ async function authenticateAndSaveCredentials() {
 }
 async function loadCredentialsAndRunServer() {
     let auth;
+    const gcpKeysPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "gcp-oauth.keys.json");
+
     if (!fs.existsSync(credentialsPath)) {
         console.error("Credentials not found. Starting authentication flow...");
         auth = await authenticateAndSaveCredentials();
@@ -1086,7 +1090,12 @@ async function loadCredentialsAndRunServer() {
     else {
         try {
             const credentials = JSON.parse(fs.readFileSync(credentialsPath, "utf-8"));
-            auth = new google.auth.OAuth2();
+            if (fs.existsSync(gcpKeysPath)) {
+                const keys = JSON.parse(fs.readFileSync(gcpKeysPath, "utf-8")).installed;
+                auth = new google.auth.OAuth2(keys.client_id, keys.client_secret);
+            } else {
+                auth = new google.auth.OAuth2();
+            }
             auth.setCredentials(credentials);
         }
         catch (error) {

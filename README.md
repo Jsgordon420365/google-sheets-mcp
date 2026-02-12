@@ -25,28 +25,52 @@ cd google-sheets-mcp
    - Create a new project in [Google Cloud Console](https://console.cloud.google.com/)
    - Enable the [Google Sheets API](https://console.cloud.google.com/marketplace/product/google/sheets.googleapis.com)
    - Configure the OAuth consent screen
-   - Create OAuth client ID credentials (Desktop application) with an appropriate redirect URI (ex: <http://localhost:3000/oauth2callback>)
-   - Download the credentials and save as `gcp-oauth.keys.json` in the `dist` subdirectory
+   - Create OAuth client ID credentials (Desktop application)
+   - Download the credentials and save as `gcp-oauth.keys.json` in the **root** and the `dist` subdirectory.
 
-4. Start the MCP server (you'll automatically be prompted to authenticate/re-authenticate your Google account when necessary):
+4. **Initial Authentication**:
+   Run the standalone auth script to generate your first token:
+   `node auth-standalone.js`
+
+5. **Start the MCP server**:
    `npm run start`
+
+## Verification & Recovery
+
+Following a system restart or environment change, follow these steps to ensure the **Executive System Bus** is operational.
+
+### 1. Agent-Led Verification (Antigravity/Claude)
+
+Ask your agent to perform a "Sentinel Handshake":
+
+1. **Read**: Run `get_baton_status` or `read_rows` on the `Shift_Log` tab.
+2. **Write**: Record a new entry using `record_shift_entry` with the action "System Recovery Verification".
+3. **Confirm**: Verify the new row is visible in the spreadsheet.
+
+### 2. Manual Verification (Gemini CLI)
+
+If agents are offline, use the **Gemini CLI** for a direct pipe test:
+
+1. **Open PowerShell** and navigate to the project directory.
+2. **Launch Gemini**: Type `gemini`.
+3. **Authenticate**: Type `/auth` to ensure the session is logged into your Google account.
+4. **Read Test**: Use the CLI to read the last entry of the `Shift_Log`.
+5. **Write Test**: Echo a new entry to the sheet: `"Recovery verify via Gemini CLI"`.
 
 ## Usage
 
-Sample config:
+Sample config for Claude Desktop (`%APPDATA%/Claude/claude_desktop_config.json`):
 
 ```json
 {
   "mcpServers": {
     "google-sheets-mcp": {
       "command": "node",
-      "args": ["/users/gordo/google-sheets-mcp/dist/index.js"]
+      "args": ["C:\\Users\\YOUR_USER\\Projects\\google-sheets-mcp\\index.js"]
     }
   }
 }
 ```
-
-Then you should be able to simply specify your spreadsheetId or ask your agent to create a new one for you.
 
 ## Available Actions
 
@@ -88,6 +112,11 @@ This server is optimized for the **Adam, Ben, and Cindy Protocol**, allowing mul
 - **URL**: `https://script.google.com/macros/s/AKfycbwTx6nUZqmXlH5g_mVCwxPctXe2lR0Y1Hy256TQVOLifAiPu0yJZYvkQywccyxJ38Gs/exec`
 - **Action**: `temporal_handshake`
 - **Spreadsheet ID**: `1LVcmsIKdgd5uf1K79EtGMgd7epD53x6OBO4cgi7GC9Q`
+
+## Maintenance Notes (Patch 0.0.2)
+
+- **OAuth Stability Fix**: Added explicit client ID/secret loading from `gcp-oauth.keys.json` to prevent refresh token failures.
+- **Pathing**: Optimized for Windows environments; ensure `gcp-oauth.keys.json` exists in both root and `dist`.
 
 ## License
 
